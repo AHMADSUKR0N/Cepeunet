@@ -9,7 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-
+use Afsakar\LeafletMapPicker\LeafletMapPickerColumn;
 class ClientsTable
 {
     public static function configure(Table $table): Table
@@ -20,6 +20,14 @@ class ClientsTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('odp.nama_odp')
+                    ->label('ODP')
+                    ->searchable()
+                    ->sortable(),
+
+LeafletMapPickerColumn::make('location')
+    ->label('Peta')
+    ->height('60px'),
                 TextColumn::make('no_hp')
                     ->searchable(),
 
