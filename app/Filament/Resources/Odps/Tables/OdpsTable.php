@@ -33,13 +33,24 @@ class OdpsTable
                     ->label('Terpakai')
                     ->badge()
                     ->color(fn ($record) => $record->clients_count >= $record->kapasitas ? 'danger' : 'success'),
-
-                TextColumn::make('lokasi')
+TextColumn::make('location')
     ->label('Lokasi')
-    ->limit(30)
-    ->formatStateUsing(function ($state, $record) {
-    dd('KODE INI JALAN', $state, $record->location);
-})
+    ->getStateUsing(function ($record) {
+        $loc = $record->location;
+
+        if (is_string($loc)) {
+            $loc = json_decode($loc, true);
+        }
+
+        $lat = $loc['lat'] ?? $loc['latitude'] ?? null;
+        $lng = $loc['lng'] ?? $loc['longitude'] ?? null;
+
+        if ($lat && $lng) {
+            return "{$lat}, {$lng}";
+        }
+
+        return 'Belum diatur';
+    })
     ->url(function ($record) {
         $loc = $record->location;
 
@@ -47,15 +58,19 @@ class OdpsTable
             $loc = json_decode($loc, true);
         }
 
-        if (! is_array($loc) || ! isset($loc['lat'], $loc['lng'])) {
+        $lat = $loc['lat'] ?? $loc['latitude'] ?? null;
+        $lng = $loc['lng'] ?? $loc['longitude'] ?? null;
+
+        if (!$lat || !$lng) {
             return null;
         }
 
-        return 'https://www.google.com/maps?q=' . $loc['lat'] . ',' . $loc['lng'];
+        // Format URL Google Maps yang akurat
+        return "https://www.google.com/maps/search/?api=1&query={$lat},{$lng}";
     })
     ->openUrlInNewTab()
-    ->color(fn ($record) => $record->location ? 'primary' : null)
-    ->icon(fn ($record) => $record->location ? 'heroicon-m-map-pin' : null),
+    ->color(fn ($record) => !empty($record->location) ? 'primary' : 'gray')
+    ->icon(fn ($record) => !empty($record->location) ? 'heroicon-m-map-pin' : null),
             ])
             ->filters([
                 SelectFilter::make('wilayah')
